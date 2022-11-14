@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { auth, firestore, googleAuthProvider } from '../lib/firebase';
 import { UserContext } from '../lib/context';
 
@@ -33,7 +34,8 @@ function SignInButton() {
 
   return (
     <button className='btn-google' onClick={signInWithGoogle}>
-      <img src={'/google.png'} width='30px' /> Sign in with Google
+      <img src={'/google.png'} width='30px' alt='Profile image' /> Sign in with
+      Google
     </button>
   );
 }
@@ -91,24 +93,26 @@ function UsernameForm() {
 
   //
 
+  const checkUsername = useCallback(
+    (username) =>
+      debounce(async () => {
+        if (username.length >= 3) {
+          const ref = firestore.doc(`usernames/${username}`);
+          const { exists } = await ref.get();
+          console.log('Firestore read executed!');
+          setIsValid(!exists);
+          setLoading(false);
+        }
+      }, 500),
+    []
+  );
+
   useEffect(() => {
     checkUsername(formValue);
-  }, [formValue]);
+  }, [formValue, checkUsername]);
 
   // Hit the database for username match after each debounced change
   // useCallback is required for debounce to work
-  const checkUsername = useCallback(
-    debounce(async (username) => {
-      if (username.length >= 3) {
-        const ref = firestore.doc(`usernames/${username}`);
-        const { exists } = await ref.get();
-        console.log('Firestore read executed!');
-        setIsValid(!exists);
-        setLoading(false);
-      }
-    }, 500),
-    []
-  );
 
   return (
     !username && (
